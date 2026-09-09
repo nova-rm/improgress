@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inventario ETL electoral</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <p class="kicker">Prueba técnica · inventario</p>
+        <h1>Qué data falta cargar</h1>
+      </div>
+      <div class="top-actions">
+        <span id="health-pill" class="pill pill-wait">Postgres…</span>
+        <button id="btn-load-historico" type="button">Cargar histórico</button>
+        <button id="btn-refresh" type="button">Actualizar</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="summary" class="summary" aria-live="polite"></section>
+      <section>
+        <h2>Fuentes</h2>
+        <div id="fuentes" class="cards"></div>
+      </section>
+      <section>
+        <h2>Cargar padrón</h2>
+        <p class="hint">Elige el periodo (foto diaria) a mano. Si esa fecha ya está cargada, te aviso antes de sobreescribir.</p>
+        <div class="padron-bar">
+          <label for="periodo">Periodo</label>
+          <select id="periodo"></select>
+          <button id="btn-load-padron" type="button">Cargar periodo</button>
+          <span id="watermark" class="meta"></span>
+        </div>
+        <p id="periodo-warning" class="warn" hidden></p>
+      </section>
+      <section>
+        <h2>Tablas en PostgreSQL</h2>
+        <div id="tablas" class="table-wrap"></div>
+      </section>
+      <section>
+        <h2>Explorar tablas</h2>
+        <p class="hint">Contenido ya estandarizado de cada tabla, una a una.</p>
+        <div id="explorer-tabs" class="tabs"></div>
+        <div class="explorer-toolbar">
+          <input id="explorer-q" type="search" placeholder="Buscar en la tabla…" />
+          <label id="explorer-periodo-wrap" class="periodo-filter" hidden>
+            Periodo
+            <select id="explorer-periodo">
+              <option value="">Todos</option>
+            </select>
+          </label>
+          <button id="explorer-search" type="button">Buscar</button>
+          <span id="explorer-meta" class="meta"></span>
+        </div>
+        <div id="explorer" class="table-wrap table-wide"></div>
+        <div class="pager">
+          <button id="explorer-prev" type="button">Anterior</button>
+          <button id="explorer-next" type="button">Siguiente</button>
+        </div>
+      </section>
+      <section>
+        <h2>Bitácora de cargas</h2>
+        <div id="cargas" class="table-wrap"></div>
+      </section>
+      <p id="error" class="error" hidden></p>
+      <p id="notice" class="notice" hidden></p>
+    </main>
+
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
