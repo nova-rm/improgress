@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------------------
+# Configuración de las fuentes y los flujos.
+# La idea del template es que agregar una fuente nueva sea agregar un bloque
+# aquí, no reescribir código. Puedes extender esta estructura.
+# ---------------------------------------------------------------------------
+paths:
+  historico: data/historico
+  empadronados: data/empadronados
+
+sources:
+  centros_votacion:
+    type: csv
+    path: data/historico/centros_votacion.csv
+    load_mode: full          # carga única
+    target_table: electoral.centros_votacion
+    natural_key: [codigo_centro_votacion]
+
+  resultados_historicos:
+    type: csv
+    path: data/historico/resultados_historicos.csv
+    load_mode: full          # carga única
+    target_table: electoral.resultados_elecciones
+    natural_key: [anio_eleccion, tipo_eleccion, vuelta, codigo_mesa, partido]
+
+  empadronados:
+    type: csv
+    path_pattern: data/empadronados/empadronados_{fecha}.csv
+    load_mode: incremental   # actualización diaria
+    target_table: electoral.empadronados
+    natural_key: [id_empadronado]
+
+quality:
+  on_reject: quarantine      # quarantine | fail | skip
+  quarantine_dir: data/quarantine
+
+categories:
+  area:
+    "": desconocido
+    u: urbana
+    r: rural
+    urbana: urbana
+    rural: rural
+  zona:
+    "": ""
+    "sin zona": ""
+  partido:
+    une: UNE
+    "u.n.e.": UNE
+    "u.n.e": UNE
+    semilla: SEMILLA
+    vamos: VAMOS
+    cabal: CABAL
+    valor: VALOR
+    viva: VIVA
+  sexo:
+    "": desconocido
+    f: F
+    femenino: F
+    m: M
+    masculino: M
+  estado_registro:
+    activo: activo
+    suspendido: suspendido
+    fallecido: fallecido
+  rango_edad:
+    "18 a 25": "18-25"
+    "18-25": "18-25"
+    "26 a 35": "26-35"
+    "26-35": "26-35"
+    "36-45": "36-45"
+    "46-60": "46-60"
+    "mayor de 60": "61+"
+    "61+": "61+"

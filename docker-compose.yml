@@ -1,0 +1,82 @@
+# Levanta el stack completo: Postgres (volumen existente), API/UI.
+# El ETL/orquestador NO corre solo: las cargas salen de la UI o de
+# `docker compose run --rm etl -m orchestration.run …`
+#
+# El volumen pgdata se reutiliza. Solo 01 y 02 corren en un volumen vacío.
+# sql/99_propuesta_mejoras.sql no se monta (propuesta; no toca electoral).
+# Nunca uses `docker compose down -v`.
+
+x-app: &app
+  build: .
+  environment:
+    POSTGRES_HOST: postgres
+    PYTHONPATH: /app
+  working_dir: /app
+
+services:
+  test:
+    <<: *app
+    command: ["-m", "pytest", "-q"]
+    restart: "no"
+
+  postgres:
+    image: postgres:16
+    container_name: electoral_pg
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-electoral_db}
+      POSTGRES_USER: ${POSTGRES_USER:-etl_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cambiame}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/01_ddl_electoral.sql:/docker-entrypoint-initdb.d/01_ddl_electoral.sql:ro
+      - ./sql/02_empadronados_periodo.sql:/docker-entrypoint-initdb.d/02_empadronados_periodo.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etl_user} -d ${POSTGRES_DB:-electoral_db}"]
+      interval: 5s
+      retries: 10
+
+  api:
+    <<: *app
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      PYTHONPATH: /app
+    command: ["-m", "uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./ui:/app/ui
+    depends_on:
+      test:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      retries: 8
+      start_period: 8s
+
+  etl:
+    <<: *app
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      PYTHONPATH: /app
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["-m", "orchestration.run", "--help"]
+    profiles: ["etl"]
+
+volumes:
+  pgdata:

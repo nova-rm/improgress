@@ -1,0 +1,12 @@
+# Programación local / servidor. Ajustar la ruta del repo y el venv.
+# El diario cubre el catch-up: si se perdió un día, carga los CSV pendientes en orden.
+
+SHELL=/bin/zsh
+PATH=/usr/local/bin:/usr/bin:/bin
+REPO=/Users/randyrivera/Documents/IMPROGRESS/improgress
+
+# Histórico: una vez al desplegar (o el primer diario lo dispara si el catálogo está vacío).
+# 15 2 * * 0  cd $REPO && .venv/bin/python -m orchestration.run historico >> logs/cron.log 2>&1
+
+# Padrón: todos los días a las 06:00 (hora local).
+0 6 * * * cd $REPO && .venv/bin/python -m orchestration.run diario >> logs/cron.log 2>&1
